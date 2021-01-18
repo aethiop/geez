@@ -93,7 +93,6 @@
 ዙረት(x - 1)፤
 }፤
 ፃፍ("ጨረስን")፤
-
 ```
 
 This is just a rough implementation of an interpreter program and the way to run it is as
