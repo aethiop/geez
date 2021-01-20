@@ -27,8 +27,7 @@ function InputStream(input) {
 
 function TokenStream(input) {
 	var current = null;
-	var keywords =
-		" á‹­áˆáŠ• áŠ¨ á‹ˆá‹° áˆŒáˆ‹ áˆµáˆ« áˆµáˆ« áŠ¥á‹áŠá‰µ áˆ€áˆ°á‰µ ";
+	var keywords = " ይሁን ከ ወደ ሌላ ስራ ስራ እውነት ሀሰት ";
 	return {
 		next: next,
 		peek: peek,
@@ -51,7 +50,7 @@ function TokenStream(input) {
 		return "+-*/%=&|<>!".indexOf(ch) >= 0;
 	}
 	function is_punc(ch) {
-		return "á£á¤(){}[]".indexOf(ch) >= 0;
+		return "፣፤(){}[]".indexOf(ch) >= 0;
 	}
 	function is_whitespace(ch) {
 		return " \t\n".indexOf(ch) >= 0;
@@ -129,7 +128,7 @@ function TokenStream(input) {
 				type: "op",
 				value: read_while(is_op_char),
 			};
-		input.croak("áŠá‹°áˆ áˆ›áˆµá‰°áŠ“áŒˆá‹µ áŠ áˆá‰°á‰»áˆˆáˆá¥ " + ch);
+		input.croak("ፊደል ማስተናገድ አልተቻለም፥ " + ch);
 	}
 	function peek() {
 		return current || (current = read_next());
@@ -144,7 +143,7 @@ function TokenStream(input) {
 	}
 }
 
-var FALSE = { type: "bool", value: false || "áˆ€áˆ°á‰µ" };
+var FALSE = { type: "bool", value: false || "ሀሰት" };
 function parse(input) {
 	var PRECEDENCE = {
 		"=": 1,
@@ -177,21 +176,18 @@ function parse(input) {
 	}
 	function skip_punc(ch) {
 		if (is_punc(ch)) input.next();
-		else
-			input.croak(
-				'áˆµáˆ­á‹á‰° áŠáŒ¥á‰¥ á‰ áˆ˜áŒ á‰ á‰… áˆ‹á‹­á¥ "' + ch + '"'
-			);
+		else input.croak('ስርዐተ ነጥብ በመጠበቅ ላይ፥ "' + ch + '"');
 	}
 	function skip_kw(kw) {
 		if (is_kw(kw)) input.next();
-		else input.croak('á‰áˆá á‰ƒáˆ á‰ áˆ˜áŒ á‰ á‰… áˆ‹á‹­á¥ "' + kw + '"');
+		else input.croak('ቁልፍ ቃል በመጠበቅ ላይ፥ "' + kw + '"');
 	}
 	function skip_op(op) {
 		if (is_op(op)) input.next();
-		else input.croak('áˆµáˆŒá‰µ á‰ áˆ˜áŒ á‰ á‰… áˆ‹á‹­á¥"' + op + '"');
+		else input.croak('ስሌት በመጠበቅ ላይ፥"' + op + '"');
 	}
 	function unexpected() {
-		input.croak("á‹«áˆá‰°á‰ á‰€ á‰ƒáˆá¥ " + JSON.stringify(input.peek()));
+		input.croak("ያልተበቀ ቃል፥ " + JSON.stringify(input.peek()));
 	}
 	function maybe_binary(left, my_prec) {
 		var tok = is_op();
@@ -230,7 +226,7 @@ function parse(input) {
 		return {
 			type: "call",
 			func: func,
-			args: delimited("(", ")", "á£", parse_expression),
+			args: delimited("(", ")", "፣", parse_expression),
 		};
 	}
 	function parse_varname() {
@@ -240,16 +236,16 @@ function parse(input) {
 	}
 
 	function parse_if() {
-		skip_kw("áŠ¨");
+		skip_kw("ከ");
 		var cond = parse_expression();
-		if (!is_punc("{")) skip_kw("á‹ˆá‹°");
+		if (!is_punc("{")) skip_kw("ወደ");
 		var then = parse_expression();
 		var ret = {
 			type: "if",
 			cond: cond,
 			then: then,
 		};
-		if (is_kw("áˆŒáˆ‹")) {
+		if (is_kw("ሌላ")) {
 			input.next();
 			ret.else = parse_expression();
 		}
@@ -259,15 +255,15 @@ function parse(input) {
 		return {
 			type: "lambda",
 			name: input.peek().type == "var" ? input.next().value : null,
-			vars: delimited("(", ")", "á£", parse_varname),
+			vars: delimited("(", ")", "፣", parse_varname),
 			body: parse_expression(),
 		};
 	}
 	function parse_let() {
-		skip_kw("á‹­áˆáŠ•");
+		skip_kw("ይሁን");
 		if (input.peek().type == "var") {
 			var name = input.next().value;
-			var defs = delimited("(", ")", "á£", parse_vardef);
+			var defs = delimited("(", ")", "፣", parse_vardef);
 			return {
 				type: "call",
 				func: {
@@ -285,7 +281,7 @@ function parse(input) {
 		}
 		return {
 			type: "let",
-			vars: delimited("(", ")", "á£", parse_vardef),
+			vars: delimited("(", ")", "፣", parse_vardef),
 			body: parse_expression(),
 		};
 	}
@@ -301,7 +297,7 @@ function parse(input) {
 	function parse_bool() {
 		return {
 			type: "bool",
-			value: input.next().value == "áŠ¥á‹áŠá‰µ",
+			value: input.next().value == "እውነት",
 		};
 	}
 	function maybe_call(expr) {
@@ -317,10 +313,10 @@ function parse(input) {
 				return exp;
 			}
 			if (is_punc("{")) return parse_prog();
-			if (is_kw("á‹­áˆáŠ•")) return parse_let();
-			if (is_kw("áŠ¨")) return parse_if();
-			if (is_kw("áŠ¥á‹áŠá‰µ") || is_kw("áˆ€áˆ°á‰µ")) return parse_bool();
-			if (is_kw("áˆµáˆ«") || is_kw("áˆ¥áˆ«")) {
+			if (is_kw("ይሁን")) return parse_let();
+			if (is_kw("ከ")) return parse_if();
+			if (is_kw("እውነት") || is_kw("ሀሰት")) return parse_bool();
+			if (is_kw("ስራ") || is_kw("ሥራ")) {
 				input.next();
 				return parse_lambda();
 			}
@@ -335,13 +331,13 @@ function parse(input) {
 		while (!input.eof()) {
 			prog.push(parse_expression());
 			if (!input.eof()) {
-				skip_punc("á¤");
+				skip_punc("፤");
 			}
 		}
 		return { type: "prog", prog: prog };
 	}
 	function parse_prog() {
-		var prog = delimited("{", "}", "á¤", parse_expression);
+		var prog = delimited("{", "}", "፤", parse_expression);
 		if (prog.length == 0) return FALSE;
 		if (prog.length == 1) return prog[0];
 		return { type: "prog", prog: prog };
@@ -371,12 +367,11 @@ Environment.prototype = {
 	},
 	get: function (name) {
 		if (name in this.vars) return this.vars[name];
-		throw new Error("á‹«áˆá‰°áˆ°á‹¨áˆ˜ áˆá‹‹áŒ­á¥ " + name);
+		throw new Error("ያልተሰየመ ልዋጭ፥ " + name);
 	},
 	set: function (name, value) {
 		var scope = this.lookup(name);
-		if (!scope && this.parent)
-			throw new Error("á‹«áˆá‰°áˆ°á‹¨áˆ˜ áˆá‹‹áŒ­á¥ " + name);
+		if (!scope && this.parent) throw new Error("ያልተሰየመ ልዋጭ፥ " + name);
 		return ((scope || this).vars[name] = value);
 	},
 	def: function (name, value) {
@@ -396,10 +391,7 @@ function evaluate(exp, env) {
 
 		case "assign":
 			if (exp.left.type != "var")
-				throw new Error(
-					"á‹­áˆ…áŠ• áˆ˜áˆ°á‹¨áˆ áŠ áˆá‰°á‰»áˆˆáˆá¥ " +
-						JSON.stringify(exp.left)
-				);
+				throw new Error("ይህን መሰየም አልተቻለም፥ " + JSON.stringify(exp.left));
 			return env.set(exp.left.value, evaluate(exp.right, env));
 
 		case "binary":
@@ -448,12 +440,11 @@ function evaluate(exp, env) {
 
 function apply_op(op, a, b) {
 	function num(x) {
-		if (typeof x != "number")
-			throw new Error("á‰áŒ¥áˆ­ á‰°áŒ á‰¥á‰† áŒáŠ• " + x + "á‰°áŒˆáŠ˜á¢");
+		if (typeof x != "number") throw new Error("ቁጥር ተጠብቆ ግን " + x + "ተገኘ።");
 		return x;
 	}
 	function div(x) {
-		if (num(x) == 0) throw new Error("á‰áŒ¥áˆ­ áˆˆ 0 áŠ á‹­áŠ«áˆáˆáˆá¢");
+		if (num(x) == 0) throw new Error("ቁጥር ለ 0 አይካፈልም።");
 		return x;
 	}
 	switch (op) {
@@ -484,7 +475,7 @@ function apply_op(op, a, b) {
 		case "!=":
 			return a !== b;
 	}
-	throw new Error("á‹¨á‰°áˆ³áˆ³á‰° áˆµáˆŒá‰µ áˆáˆáŠ­á‰µá¥ " + op);
+	throw new Error("የተሳሳተ ስሌት ምልክት፥ " + op);
 }
 
 function make_lambda(env, exp) {
@@ -516,10 +507,10 @@ globalEnv.def("time", function (func) {
 
 if (typeof process != "undefined")
 	(function () {
-		globalEnv.def("áƒá", function (val) {
+		globalEnv.def("ፃፍ", function (val) {
 			console.log(val);
 		});
-		globalEnv.def("áˆ˜áˆµ_áƒá", function (val) {
+		globalEnv.def("መስ_ፃፍ", function (val) {
 			console.log(val, "/n");
 		});
 		var code = "";
