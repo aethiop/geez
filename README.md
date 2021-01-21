@@ -1,5 +1,11 @@
 # <center> GEEZ - AMHARIC INTERPRETER LANGUAGE</center>
 
+## VARIABLES
+
+```
+ስም = "አቡቹ"፤
+```
+
 ## FUNCTIONS AND IF - THEN STATEMENT
 
 ```
